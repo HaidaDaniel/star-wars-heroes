@@ -26,13 +26,13 @@ export const fetchFilmDetails = async (filmId: number): Promise<Film> => {
     starshipId: number
   ): Promise<Starship> => {
     const response = await axios.get(`${API_BASE}/starships/${starshipId}/`);
-    if (!response) {
+    if (!response) {  
       throw new Error("Failed to fetch starship details");
     }
     return response.data;
   };
 
-const MAX_PARALLEL_REQUESTS = 3;
+const MAX_PARALLEL_REQUESTS = 2;
 
 export const fetchWithLimit = async <T>(
     ids: number[],
