@@ -1,10 +1,10 @@
 import React from 'react';
-import './App.css';
+
 import { HeroesList } from './components/HeroesList';
 
 function App() {
   return (
-    <div className="App">
+    <div className="App" data-testid="app-component">
       <HeroesList/>
     </div>
   );

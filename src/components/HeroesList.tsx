@@ -2,7 +2,7 @@ import { useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchHeroesPage } from "../api/api";
-import { HeroPageResponse, HeroWithId } from "../types/Hero.types";
+import { HeroPageResponse, Hero } from "../types/Hero.types";
 import HeroCard from "./HeroCard";
 import { HeroDetails } from "./HeroDetails";
 import "antd/dist/reset.css";
@@ -27,7 +27,7 @@ export const HeroesList = () => {
     });
 
   const heroes =
-    data?.pages.flatMap((page) => page.results) || ([] as HeroWithId[]);
+    data?.pages.flatMap((page) => page.results) || ([] as Hero[]);
 
   const loadMoreHeroes = () => {
     if (hasNextPage && !isLoading && !isFetching) fetchNextPage();
@@ -69,8 +69,8 @@ export const HeroesList = () => {
         footer={null}
         transitionName=""
         centered
-        width={900}
-        height={600}
+        width={'100vw'}
+        height={'100vh'}
       >
         {selectedHeroUrl && <HeroDetails heroUrl={selectedHeroUrl} />}
       </Modal>

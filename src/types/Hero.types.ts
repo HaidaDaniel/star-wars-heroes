@@ -1,4 +1,5 @@
 export type Hero = {
+  id: number;
   name: string;
   birth_year: string;
   eye_color: string;
@@ -7,23 +8,19 @@ export type Hero = {
   height: string;
   mass: string;
   skin_color: string;
-  homeworld: string;
+  homeworld: number;
   films: number[];
-  species: string[];
+  species: number[];
   starships: number[];
-  vehicles: string[];
+  vehicles: number[];
   url: string;
   created: string;
   edited: string;
 };
 
-export type HeroWithId = Hero & {
-    id: number;
-  };
-
 export type HeroPageResponse = {
   count: number;
   next: string | null;
   previous: string | null;
-  results: HeroWithId[];
+  results: Hero[];
 };

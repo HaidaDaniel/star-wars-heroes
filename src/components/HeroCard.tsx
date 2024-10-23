@@ -1,7 +1,10 @@
-import { HeroWithId } from "../types/Hero.types";
+import { format } from "date-fns";
+import { Hero } from "../types/Hero.types";
 import "./HeroCard.css";
+import { useContext } from "react";
+import { AppContext } from "../context/AppContext";
 
-export const HeroCard: React.FC<HeroWithId> = (props) => {
+export const HeroCard: React.FC<Hero> = (props) => {
   const {
     id,
     name,
@@ -20,6 +23,9 @@ export const HeroCard: React.FC<HeroWithId> = (props) => {
     created,
     edited,
   } = props;
+
+  const { films: filmData } = useContext(AppContext);
+
   return (
     <div className="hero-card">
       <img
@@ -54,7 +60,8 @@ export const HeroCard: React.FC<HeroWithId> = (props) => {
           <strong>Homeworld:</strong> {homeworld}
         </p>
         <p>
-          <strong>Films:</strong> {films.join(", ")}
+          <strong>Films:</strong>{" "}
+          {films.map((film) => filmData[film]?.title || film).join(", ")}
         </p>
         <p>
           <strong>Species:</strong> {species.join(", ")}
@@ -66,10 +73,10 @@ export const HeroCard: React.FC<HeroWithId> = (props) => {
           <strong>Vehicles:</strong> {vehicles.join(", ")}
         </p>
         <p>
-          <strong>Created:</strong> {new Date(created).toLocaleDateString()}
+          <strong>Created:</strong> {format(new Date(created), "dd/MM/yyyy")}
         </p>
         <p>
-          <strong>Edited:</strong> {new Date(edited).toLocaleDateString()}
+          <strong>Edited:</strong> {format(new Date(edited), "dd/MM/yyyy")}
         </p>
       </div>
     </div>
