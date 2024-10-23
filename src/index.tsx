@@ -6,11 +6,13 @@ import reportWebVitals from "./reportWebVitals";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProvider } from "./context/AppContext";
 
+
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 
 const queryClient = new QueryClient();
+
 
 root.render(
   <React.StrictMode>

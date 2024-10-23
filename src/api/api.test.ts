@@ -6,9 +6,11 @@ import {
   fetchStarshipDetails,
   fetchFilmsAndStarships,
   fetchWithLimit,
+  fetchStarWarsData,
 } from "./api";
 import { Film } from "../types/Film.type";
 import { Starship } from "../types/Starship.type";
+import { StarWarsData } from "../types/Data";
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -111,4 +113,44 @@ describe("API Functions", () => {
     expect(fetchFn).toHaveBeenCalledTimes(2);
     expect(results).toEqual([mockData, mockData]);
   });
+  describe('fetchStarWarsData', () => {
+    const API_BASE = 'https://sw-api.starnavi.io';
+  
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+  
+    test('successfully fetches and formats Star Wars data', async () => {
+      const mockResponse = {
+        data: {
+          results: [
+            { id: 1, title: 'A New Hope' },
+            { id: 2, title: 'The Empire Strikes Back' },
+          ],
+        },
+      };
+  
+      (axios.get as jest.Mock).mockResolvedValue(mockResponse);
+  
+      const expectedData: StarWarsData = {
+        films: {
+          1: { id: 1, title: 'A New Hope' } as Film,
+          2: { id: 2, title: 'The Empire Strikes Back' } as Film,
+        },
+      };
+  
+      const data = await fetchStarWarsData();
+      expect(data).toEqual(expectedData);
+      expect(axios.get).toHaveBeenCalledWith(`${API_BASE}/films/`);
+    });
+  
+    test('throws an error when the API request fails', async () => {
+      const errorMessage = 'Network Error';
+  
+      (axios.get as jest.Mock).mockRejectedValue(new Error(errorMessage));
+  
+      await expect(fetchStarWarsData()).rejects.toThrow(errorMessage);
+    });
+  });
+
 });
