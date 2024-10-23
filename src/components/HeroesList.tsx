@@ -67,6 +67,7 @@ export const HeroesList = () => {
         open={isModalOpen}
         onCancel={handleCloseModal}
         footer={null}
+        transitionName=""
         centered
         width={900}
         height={600}
