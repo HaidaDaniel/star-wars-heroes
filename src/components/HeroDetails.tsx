@@ -19,7 +19,6 @@ export const HeroDetails: React.FC<HeroDetailsProps> = ({ heroUrl }) => {
   const {
     data: heroData,
     isLoading,
-    isError,
   } = useQuery<Hero, Error>({
     queryKey: ["heroDetails", heroUrl],
     queryFn: () => fetchHeroDetails(heroUrl),
@@ -28,6 +27,8 @@ export const HeroDetails: React.FC<HeroDetailsProps> = ({ heroUrl }) => {
   useEffect(() => {
     const fetchDetails = async () => {
       if (heroData) {
+        setNodes([]);
+        setEdges([]);
         const { name, films, starships } = heroData;
 
         const widthNode = 200;
@@ -90,7 +91,6 @@ export const HeroDetails: React.FC<HeroDetailsProps> = ({ heroUrl }) => {
   }, [heroData]);
 
   if (isLoading) return <h4>Loading hero details...</h4>;
-  if (isError) return <h4>Error loading hero details</h4>;
 
   return (
     <div className="hero-details">
