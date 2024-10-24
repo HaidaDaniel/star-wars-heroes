@@ -1,7 +1,7 @@
 import { useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { fetchHeroesPage } from "../api/api";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { fetchHeroDetails, fetchHeroesPage } from "../api/api";
 import { HeroPageResponse, Hero } from "../types/Hero.types";
 import HeroCard from "./HeroCard";
 import { HeroDetails } from "./HeroDetails";
@@ -10,7 +10,7 @@ import "./HeroesList.css";
 import { Modal } from "antd";
 
 export const HeroesList = () => {
-  const [selectedHeroUrl, setSelectedHeroUrl] = useState<string | null>(null);
+  const [selectedHeroId, setSelectedHeroId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetching } =
@@ -26,22 +26,28 @@ export const HeroesList = () => {
       },
     });
 
-  const heroes =
-    data?.pages.flatMap((page) => page.results) || ([] as Hero[]);
+  const heroes = data?.pages.flatMap((page) => page.results) || ([] as Hero[]);
 
   const loadMoreHeroes = () => {
     if (hasNextPage && !isLoading && !isFetching) fetchNextPage();
   };
-  const handleOpenModal = (url: string) => {
-    setSelectedHeroUrl(url);
-    setIsModalOpen(true); 
+  const handleOpenModal  = async (id: number) => {
+    setSelectedHeroId(id);
+
+    setIsModalOpen(true);
+
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setSelectedHeroUrl(null);
+    setSelectedHeroId(null);
   };
 
+  const { data: heroDetails, isLoading: isLoadingHeroDetails, isError } = useQuery<Hero, Error>({
+    queryKey: ["heroDetails", selectedHeroId],
+    queryFn: () => fetchHeroDetails(selectedHeroId!),
+    enabled: !!selectedHeroId,
+  });
 
   if (isLoading) {
     return <h4>Loading...</h4>;
@@ -57,7 +63,7 @@ export const HeroesList = () => {
       >
         {heroes &&
           heroes.map((hero) => (
-            <div key={hero.url} onClick={() =>  handleOpenModal(hero.url)}>
+            <div key={hero.url} onClick={() => handleOpenModal(hero.id)}>
               <HeroCard {...hero} />
             </div>
           ))}
@@ -69,10 +75,24 @@ export const HeroesList = () => {
         footer={null}
         transitionName=""
         centered
-        width={'100vw'}
-        height={'100vh'}
+        width={"80vw"} 
+        styles={{
+          body: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '90vh',
+            backgroundColor: '#f5f5f5',
+          },
+        }}
       >
-        {selectedHeroUrl && <HeroDetails heroUrl={selectedHeroUrl} />}
+        {isLoadingHeroDetails ? (
+          <h4>Loading hero details...</h4>
+        ) : isError ? (
+          <h4>Error fetching hero details</h4>
+        ) : (
+          heroDetails && <HeroDetails heroDetails={heroDetails} />
+        )}
       </Modal>
     </div>
   );

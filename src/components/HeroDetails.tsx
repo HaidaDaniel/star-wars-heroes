@@ -1,100 +1,50 @@
 import { useEffect, useState } from "react";
-
 import { useQuery } from "@tanstack/react-query";
-import { fetchHeroDetails, fetchFilmsAndStarships } from "../api/api";
+import { fetchFilmsAndStarships, IFetchFilmsAndStarships } from "../api/api";
 import { Hero } from "../types/Hero.types";
+import { generateEdges, generateNodes } from "../helpers/FlowParamGeneration";
+import { Edge, ReactFlow, Node } from "@xyflow/react";
+import "@xyflow/react/dist/base.css";
 import "./HeroDetails.css";
-import { Edge, ReactFlow , Node } from "@xyflow/react";
-import '@xyflow/react/dist/base.css';
-
 
 interface HeroDetailsProps {
-  heroUrl: string;
+  heroDetails: Hero;
 }
 
-export const HeroDetails: React.FC<HeroDetailsProps> = ({ heroUrl }) => {
+export const HeroDetails: React.FC<HeroDetailsProps> = ({ heroDetails }) => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
+  const { name, films, starships } = heroDetails;
+
   const {
-    data: heroData,
+    data: filmsAndStarshipsData,
     isLoading,
-  } = useQuery<Hero, Error>({
-    queryKey: ["heroDetails", heroUrl],
-    queryFn: () => fetchHeroDetails(heroUrl),
+    isError,
+  } = useQuery<IFetchFilmsAndStarships>({
+    queryKey: ["filmsAndStarships", films || [], starships || []],
+    queryFn: () => fetchFilmsAndStarships(films, starships),
   });
 
   useEffect(() => {
-    const fetchDetails = async () => {
-      if (heroData) {
-        setNodes([]);
-        setEdges([]);
-        const { name, films, starships } = heroData;
+    if (filmsAndStarshipsData) {
+      const { films: filmDetails, starships: starshipDetails } =
+        filmsAndStarshipsData;
+      const nodes = generateNodes(name, filmDetails, starshipDetails);
+      const edges = generateEdges(filmDetails, starshipDetails);
 
-        const widthNode = 200;
-        const paddingNode = 0;
-        const xWidth = widthNode + paddingNode;
-
-        const heroNode = {
-          id: "hero",
-          data: { label: name },
-          position: { x: 250, y: 5 },
-          style: { width: widthNode, height: "40px", display: "flex", justifyContent: "center", alignItems: "center" }
-        };
-
-        const { films: filmDetails, starships: starshipDetails } =
-          await fetchFilmsAndStarships(films, starships);
-
-
-
-        const filmNodes = filmDetails.map((film, idx) => ({
-          id: `film-${idx}`,
-          data: { label: film.title },
-          position: { x: xWidth * idx, y: 100 },
-          style: { width: widthNode, height: "40px", display: "flex", justifyContent: "center", alignItems: "center" }
-        }));
-        const starshipNodes = starshipDetails.map((ship, idx) => ({
-          id: `ship-${idx}`,
-          data: { label: ship.name },
-          position: { x: xWidth * idx, y: 200 },
-          style: { width: widthNode, height: "40px", display: "flex", justifyContent: "center", alignItems: "center" }
-        }));
-
-        const filmEdges = filmDetails.map((_, idx) => ({
-          id: `e-hero-film-${idx}`,
-          source: "hero",
-          target: `film-${idx}`,
-        }));
-
-        const shipEdges = [] as Edge[];
-        starshipDetails.forEach((ship, shipIdx) => {
-          ship.films.forEach((filmUrl) => {
-            const filmIdx = filmDetails.findIndex((film) => {
-              return film.id === filmUrl;
-            });
-            if (filmIdx !== -1) {
-              shipEdges.push({
-                id: `e-film-ship-${shipIdx}-${filmIdx}`,
-                source: `film-${filmIdx}`,
-                target: `ship-${shipIdx}`,
-              });
-            }
-          });
-        });
-
-        setNodes([heroNode, ...filmNodes, ...starshipNodes]);
-        setEdges([...filmEdges, ...shipEdges]);
-      }
-    };
-
-    fetchDetails();
-  }, [heroData]);
+      setNodes(nodes);
+      setEdges(edges);
+   
+    }
+  }, [filmsAndStarshipsData, name]);
 
   if (isLoading) return <h4>Loading hero details...</h4>;
+  if (isError) return <h4>Error fetching hero details</h4>;
 
   return (
     <div className="hero-details">
-      <ReactFlow nodes={nodes} edges={edges} />
+      <ReactFlow nodes={nodes} edges={edges} fitView />
     </div>
   );
 };

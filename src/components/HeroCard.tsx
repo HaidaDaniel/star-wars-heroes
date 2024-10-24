@@ -35,49 +35,48 @@ export const HeroCard: React.FC<Hero> = (props) => {
       />
       <div className="hero-info">
         <h2 className="hero-name">{name}</h2>
-        <p>
+        <div>
           <strong>Birth Year:</strong> {birth_year}
-        </p>
-        <p>
+        </div>
+        <div>
           <strong>Eye Color:</strong> {eye_color}
-        </p>
-        <p>
+        </div>
+        <div>
           <strong>Gender:</strong> {gender}
-        </p>
-        <p>
+        </div>
+        <div>
           <strong>Hair Color:</strong> {hair_color}
-        </p>
-        <p>
+        </div>
+        <div>
           <strong>Height:</strong> {height}
-        </p>
-        <p>
+        </div>
+        <div>
           <strong>Mass:</strong> {mass}
-        </p>
-        <p>
+        </div>
+        <div>
           <strong>Skin Color:</strong> {skin_color}
-        </p>
-        <p>
+        </div>
+        <div>
           <strong>Homeworld:</strong> {homeworld}
-        </p>
-        <p>
-          <strong>Films:</strong>{" "}
-          {films.map((film) => filmData[film]?.title || film).join(", ")}
-        </p>
-        <p>
+        </div>
+        <div>
+        <div><strong>Films:</strong> {films?.map((film) => filmData[film]?.title || film).join(", ")}</div>
+        </div>
+        <div>
           <strong>Species:</strong> {species.join(", ")}
-        </p>
-        <p>
+        </div>
+        <div>
           <strong>Starships:</strong> {starships.join(", ")}
-        </p>
-        <p>
+        </div>
+        <div>
           <strong>Vehicles:</strong> {vehicles.join(", ")}
-        </p>
-        <p>
+        </div>
+        <div>
           <strong>Created:</strong> {format(new Date(created), "dd/MM/yyyy")}
-        </p>
-        <p>
+        </div>
+        <div>
           <strong>Edited:</strong> {format(new Date(edited), "dd/MM/yyyy")}
-        </p>
+        </div>
       </div>
     </div>
   );

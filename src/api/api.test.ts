@@ -36,7 +36,7 @@ describe("API Functions", () => {
     const mockData = { name: "Luke Skywalker" };
     mockedAxios.get.mockResolvedValueOnce({ data: mockData });
 
-    const data = await fetchHeroDetails("https://sw-api.starnavi.io/people/1");
+    const data = await fetchHeroDetails(1);
 
     expect(mockedAxios.get).toHaveBeenCalledWith(
       "https://sw-api.starnavi.io/people/1"

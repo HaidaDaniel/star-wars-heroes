@@ -1,54 +1,54 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { Film } from "../types/Film.type";
 import { Starship } from "../types/Starship.type";
 import { StarWarsData } from "../types/Data";
+import { Hero, HeroPageResponse } from "../types/Hero.types";
 
 const API_BASE = "https://sw-api.starnavi.io";
 
-export const fetchHeroesPage = async (page: number) => {
-  const response = await axios.get(`${API_BASE}/people?page=${page}`);
+type FetchFunction<T> = (id: number) => Promise<T>;
+// rename
+const baseRequest = async <T>(slug: string): Promise<T> => {
+  const response: AxiosResponse<T> = await axios.get(`${API_BASE}/${slug}`);
   return response.data;
 };
 
-export const fetchHeroDetails = async (heroUrl: string) => {
-  const response = await axios.get(`${heroUrl}`);
-  return response.data;
-};
+export const fetchHeroesPage = async (page: number) =>
+  baseRequest<HeroPageResponse>(`people?page=${page}`);
 
-export const fetchFilmDetails = async (filmId: number): Promise<Film> => {
-  const response = await axios.get(`${API_BASE}/films/${filmId}/`);
-  return response.data;
-};
+export const fetchHeroDetails = async (heroId: number) =>{
+ return baseRequest<Hero>(`people/${heroId}`);}
 
-export const fetchStarshipDetails = async (starshipId: number): Promise<Starship> => {
-  const response = await axios.get(`${API_BASE}/starships/${starshipId}/`);
-  return response.data;
-};
+export const fetchFilmDetails = async (filmId: number): Promise<Film> =>
+  baseRequest<Film>(`films/${filmId}/`);
 
-const MAX_PARALLEL_REQUESTS = 2;
+export const fetchStarshipDetails = async (
+  starshipId: number
+): Promise<Starship> => baseRequest<Starship>(`starships/${starshipId}/`);
 
 export const fetchWithLimit = async <T>(
   ids: number[],
-  fetchFn: (id: number) => Promise<T>
+  fetchFn: FetchFunction<T>,
+  limit = 1
 ): Promise<T[]> => {
   const results: T[] = [];
   let currentIndex = 0;
 
   const fetchNext = async (): Promise<void> => {
     if (currentIndex >= ids.length) return;
-    const id = ids[currentIndex];
-    currentIndex++;
+    const id = ids[currentIndex++];
     try {
       const result = await fetchFn(id);
       results.push(result);
     } catch (error) {
+      console.error(`Failed to fetch data for ID: ${id}`, error);
     } finally {
       await fetchNext();
     }
   };
 
   const initialFetches = Array.from(
-    { length: Math.min(MAX_PARALLEL_REQUESTS, ids.length) },
+    { length: Math.min(limit, ids.length) },
     fetchNext
   );
   await Promise.all(initialFetches);
@@ -56,26 +56,28 @@ export const fetchWithLimit = async <T>(
   return results;
 };
 
+export interface IFetchFilmsAndStarships {
+  films: Film[];
+  starships: Starship[];
+}
+
 export const fetchFilmsAndStarships = async (
   filmIds: number[],
   starshipIds: number[]
-) => {
-  try {
-    const films = await fetchWithLimit(filmIds, fetchFilmDetails);
-    const starships = await fetchWithLimit(starshipIds, fetchStarshipDetails);
+): Promise<IFetchFilmsAndStarships> => {
+  const [films, starships] = await Promise.all([
+    fetchWithLimit(filmIds, fetchFilmDetails),
+    fetchWithLimit(starshipIds, fetchStarshipDetails),
+  ]);
 
-    return { films, starships };
-  } catch (error) {
-    throw error;
-  }
+  return { films, starships };
 };
 
 export const fetchStarWarsData = async (): Promise<StarWarsData> => {
-  const filmsRes = await axios.get(`${API_BASE}/films/`);
-  const films = filmsRes.data.results;
+  const films = await baseRequest<{ results: Film[] }>(`films/`);
 
   return {
-    films: films.reduce((acc: Record<string, Film>, film: Film) => {
+    films: films.results.reduce<Record<string, Film>>((acc, film) => {
       acc[film.id] = film;
       return acc;
     }, {}),
